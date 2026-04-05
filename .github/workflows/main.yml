@@ -10,6 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -18,18 +24,21 @@ jobs:
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+      - name: Initialize TWA
+        run: |
+          bubblewrap init --manifest https://myfocusday.netlify.app/manifest.json --directory ./twa-app
+        env:
+          BUBBLEWRAP_SKIP_JDK_CHECK: true
 
       - name: Build APK
-        run: bubblewrap build --skipPwaValidation
-        working-directory: ./FD
+        run: |
+          cd twa-app
+          bubblewrap build
+        env:
+          BUBBLEWRAP_SKIP_JDK_CHECK: true
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: focusday-apk
-          path: ./FD/app-release-signed.apk
+          path: ./twa-app/app-release-signed.apk
