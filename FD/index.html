@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#b07020"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="FocusDay"/>
+  <title>FocusDay — Productivity Suite</title>
+  <link rel="manifest" href="manifest.json"/>
+  <link rel="apple-touch-icon" href="icon-192.png"/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23b07020'/><text x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Georgia,serif' font-size='18' font-weight='700' fill='%23ffffff'>F</text></svg>"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --cream:#f5ede0;--paper:#ede0cd;--white:#ffffff;
+      --ink:#111008;--ink-mid:#3d3328;--ink-low:#7a6e62;--ink-ghost:#b8aa9c;
+      --gold:#b07020;--gold-lt:#e8c87a;--gold-bg:#faefd8;--gold-dk:#8a5510;--gold-bd:#d4a84b;
+      --green:#1e6b3e;--green-lt:#c8ead6;--green-mid:#2a8c52;
+      --red:#a82418;--red-lt:#f5d5d0;
+      --blue:#1a5fb4;--blue-lt:#daeaf8;
+      --border:#d4c4b0;--border2:#bfad98;
+      --shadow:0 1px 4px rgba(0,0,0,.08),0 6px 20px rgba(0,0,0,.07);
+      --r:10px;--sidebar:232px;
+    }
+    html,body{height:100%;}
+    body{background:var(--cream);color:var(--ink);font-family:'Outfit',sans-serif;font-size:16px;display:flex;overflow:hidden;flex-direction:column;}
+    .app-wrap{display:flex;flex:1;overflow:hidden;}
+
+    /* NOTIFICATION BANNER */
+    .top-banner{background:var(--blue-lt);border-bottom:1px solid #c0d8f0;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:0.82rem;color:var(--blue);font-weight:500;flex-shrink:0;}
+    .top-banner button{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+    .top-banner-x{background:none;border:none;cursor:pointer;color:var(--blue);font-size:1rem;padding:0 4px;line-height:1;}
+
+    /* SIDEBAR */
+    .sidebar{width:var(--sidebar);min-width:var(--sidebar);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100%;overflow-y:auto;}
+    .sidebar-logo{padding:22px 20px 16px;border-bottom:1px solid var(--border);}
+    .logo-text{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;color:var(--ink);}
+    .logo-text span{color:var(--gold);}
+    .logo-sub{font-size:0.68rem;color:var(--ink-low);margin-top:3px;text-transform:uppercase;letter-spacing:.05em;}
+    .sidebar-section{padding:14px 12px 6px;}
+    .sidebar-label{font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--ink-ghost);padding:0 8px;margin-bottom:6px;}
+    .nav-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:7px;cursor:pointer;color:var(--ink-low);font-size:0.88rem;font-weight:500;transition:background .15s,color .15s;margin-bottom:2px;text-decoration:none;user-select:none;}
+    .nav-item:hover{background:var(--paper);color:var(--ink-mid);}
+    .nav-item.active{background:var(--gold-bg);color:var(--gold-dk);font-weight:700;border-left:3px solid var(--gold);padding-left:9px;}
+    .nav-left{display:flex;align-items:center;gap:9px;}
+    .nav-dot{width:6px;height:6px;border-radius:50%;border:1.5px solid var(--border2);flex-shrink:0;}
+    .nav-item.active .nav-dot{background:var(--gold);border-color:var(--gold);}
+    .pro-pill{font-size:0.58rem;background:var(--gold-bg);color:var(--gold-dk);padding:2px 6px;border-radius:4px;font-weight:700;border:1px solid var(--gold-bd);}
+    .sidebar-bottom{margin-top:auto;padding:14px;border-top:1px solid var(--border);}
+    .sidebar-date{font-size:0.7rem;color:var(--ink-low);padding:4px 6px;font-family:'DM Mono',monospace;}
+    .streak-badge{display:flex;align-items:center;gap:8px;background:var(--gold-bg);border:1px solid var(--gold-bd);border-radius:8px;padding:8px 11px;margin-top:8px;}
+    .streak-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+    .streak-text{font-size:0.76rem;color:var(--gold-dk);font-weight:700;font-family:'DM Mono',monospace;}
+    .pro-cta{margin-top:10px;background:var(--ink);color:var(--gold-lt);border-radius:8px;padding:10px 12px;text-align:center;cursor:pointer;font-size:0.78rem;font-weight:700;transition:opacity .15s;letter-spacing:.03em;border:none;width:100%;font-family:'Outfit',sans-serif;}
+    .pro-cta:hover{opacity:.85;}
+    .pro-cta.active{background:linear-gradient(135deg,var(--gold-dk),var(--gold));color:#fff;cursor:default;}
+
+    /* MAIN */
+    .main{flex:1;overflow-y:auto;}
+    .page{display:none;padding:32px 36px;max-width:980px;}
+    .page.active{display:block;animation:fadeIn .2s ease;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+    /* HEADERS */
+    .page-header{margin-bottom:28px;}
+    .page-title{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:600;color:var(--ink);line-height:1.1;}
+    .page-sub{font-size:0.86rem;color:var(--ink-low);margin-top:5px;}
+
+    /* CARDS */
+    .card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;}
+    .card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);}
+    .card-title{font-size:0.82rem;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px;text-transform:uppercase;letter-spacing:.04em;}
+    .title-bar{width:3px;height:13px;border-radius:2px;background:var(--gold);flex-shrink:0;}
+    .badge{font-size:0.64rem;font-weight:700;padding:3px 9px;border-radius:99px;}
+    .badge-gold{background:var(--gold-bg);color:var(--gold-dk);border:1px solid var(--gold-bd);}
+    .badge-green{background:var(--green-lt);color:var(--green);}
+    .badge-ink{background:var(--paper);color:var(--ink-mid);border:1px solid var(--border);}
+    .badge-blue{background:var(--blue-lt);color:var(--blue);}
+
+    /* GRIDS */
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+    .gap{margin-bottom:20px;}
+
+    /* STAT CARDS */
+    .stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow);border-top:3px solid var(--gold-bd);}
+    .stat-card.gt{border-top-color:var(--green-mid);}
+    .stat-card.bt{border-top-color:var(--blue);}
+    .stat-card.it{border-top-color:var(--border2);}
+    .stat-label{font-size:0.7rem;color:var(--ink-low);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:8px;}
+    .stat-val{font-size:1.9rem;font-weight:700;color:var(--ink);letter-spacing:-1px;font-family:'DM Mono',monospace;line-height:1;}
+    .stat-sub{font-size:0.72rem;color:var(--ink-low);margin-top:5px;}
+    .prog-wrap{background:var(--paper);border-radius:99px;height:5px;overflow:hidden;margin-top:8px;}
+    .prog-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold-dk),var(--gold));transition:width .5s ease;}
+    .prog-fill.g{background:linear-gradient(90deg,var(--green),var(--green-mid));}
+    .prog-fill.b{background:linear-gradient(90deg,#1a5fb4,#3584e4);}
+
+    /* INPUTS */
+    .input{width:100%;background:var(--cream);border:1.5px solid var(--border);border-radius:7px;color:var(--ink);font-family:'Outfit',sans-serif;font-size:0.9rem;padding:9px 13px;outline:none;transition:border-color .2s,background .2s;}
+    .input::placeholder{color:var(--ink-ghost);}
+    .input:focus{border-color:var(--gold);background:var(--white);}
+    textarea.input{resize:vertical;min-height:80px;line-height:1.6;}
+    select.input{cursor:pointer;}
+    .btn{border:none;border-radius:7px;font-family:'Outfit',sans-serif;font-size:0.88rem;font-weight:700;cursor:pointer;padding:9px 18px;transition:opacity .15s,transform .1s;}
+    .btn:active{transform:scale(.97);}
+    .btn-p{background:var(--gold);color:#fff;}
+    .btn-p:hover{background:var(--gold-dk);}
+    .btn-g{background:var(--paper);color:var(--ink-mid);border:1.5px solid var(--border);}
+    .btn-g:hover{border-color:var(--border2);color:var(--ink);}
+    .input-row{display:flex;gap:8px;padding:13px 18px;border-bottom:1px solid var(--border);background:var(--cream);}
+
+    /* LIMIT BANNER */
+    .lim-ban{background:var(--gold-bg);border:1px solid var(--gold-bd);border-radius:8px;padding:10px 14px;margin:10px 18px;font-size:0.8rem;color:var(--gold-dk);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .lim-ban button{background:var(--gold);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:0.76rem;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;}
+
+    /* TASKS */
+    .task-list{padding:6px 10px;}
+    .task-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;transition:background .12s;animation:su .2s ease both;}
+    @keyframes su{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    .task-item:hover{background:var(--cream);}
+    .task-item:hover .t-acts{opacity:1;}
+    .t-txt{flex:1;font-size:0.88rem;color:var(--ink-mid);word-break:break-word;line-height:1.45;}
+    .t-txt.done{color:var(--ink-ghost);text-decoration:line-through;}
+    .t-acts{display:flex;gap:4px;opacity:0;flex-shrink:0;}
+    .ib{background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:5px;font-size:0.75rem;color:var(--ink-ghost);font-family:'Outfit',sans-serif;font-weight:600;transition:background .12s,color .12s;}
+    .ib:hover{background:var(--paper);color:var(--ink-mid);}
+    .ib.del:hover{color:var(--red);background:var(--red-lt);}
+    .ib.foc{color:var(--gold-dk);background:var(--gold-bg);border:1px solid var(--gold-bd);}
+    .ib.foc:hover{background:var(--gold-lt);}
+    .mit-n{width:26px;height:26px;border-radius:6px;background:var(--gold-bg);color:var(--gold-dk);font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;border:1.5px solid var(--gold-bd);font-family:'DM Mono',monospace;transition:background .15s;}
+    .mit-n:hover{background:var(--gold-lt);}
+    .mit-n.dn{background:var(--green-lt);color:var(--green);border-color:var(--green-lt);}
+    .mit-empty{font-style:italic;color:var(--ink-ghost);font-size:0.84rem;}
+    .divider{height:1px;background:var(--border);margin:3px 10px;}
+
+    /* TIMER */
+    .timer-center{display:flex;flex-direction:column;align-items:center;padding:36px 24px;gap:22px;}
+    .ring-wrap{position:relative;width:210px;height:210px;}
+    .ring-svg{width:210px;height:210px;transform:rotate(-90deg);}
+    .ring-bg{fill:none;stroke:var(--paper);stroke-width:9;}
+    .ring-fill{fill:none;stroke:var(--gold);stroke-width:9;stroke-linecap:round;stroke-dasharray:565;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke .3s;}
+    .ring-fill.brk{stroke:var(--green);}
+    .ring-disp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+    .ring-time{font-family:'DM Mono',monospace;font-size:2.6rem;font-weight:500;color:var(--ink);letter-spacing:-1px;line-height:1;}
+    .ring-phase{font-size:0.72rem;color:var(--ink-low);margin-top:5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;}
+    .mode-pills{display:flex;background:var(--paper);border-radius:8px;padding:3px;gap:2px;border:1.5px solid var(--border);}
+    .mode-pill{padding:6px 16px;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;color:var(--ink-low);border:none;background:none;font-family:'Outfit',sans-serif;transition:background .15s,color .15s;}
+    .mode-pill.active{background:var(--white);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+    .sess-row{display:flex;gap:7px;}
+    .sess-dot{width:9px;height:9px;border-radius:50%;background:var(--border);transition:background .3s;}
+    .sess-dot.dn{background:var(--gold);}
+    .timer-ctrl{display:flex;gap:10px;}
+
+    /* HABITS */
+    .habit-item{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);transition:background .12s;}
+    .habit-item:last-child{border-bottom:none;}
+    .habit-item:hover{background:var(--cream);}
+    .habit-item:hover .h-acts{opacity:1;}
+    .h-toggle{width:40px;height:23px;border-radius:12px;background:var(--paper);border:1.5px solid var(--border2);cursor:pointer;position:relative;flex-shrink:0;transition:background .2s,border-color .2s;}
+    .h-toggle::after{content:'';position:absolute;width:15px;height:15px;border-radius:50%;background:var(--ink-ghost);top:50%;left:3px;transform:translateY(-50%);transition:left .2s,background .2s;}
+    .h-toggle.on{background:var(--green);border-color:var(--green);}
+    .h-toggle.on::after{left:20px;background:#fff;}
+    .h-info{flex:1;}
+    .h-name{font-size:0.88rem;font-weight:600;color:var(--ink);}
+    .h-streak{font-size:0.72rem;color:var(--ink-low);margin-top:2px;font-family:'DM Mono',monospace;}
+    .h-emoji{font-size:1.1rem;width:24px;text-align:center;flex-shrink:0;}
+    .h-acts{opacity:0;transition:opacity .15s;}
+    .add-habit-row{display:flex;gap:8px;padding:13px 18px;border-top:1px solid var(--border);background:var(--cream);flex-wrap:wrap;}
+    .emoji-inp{width:46px;text-align:center;}
+
+    /* NOTES */
+    .notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;padding:18px;}
+    .note-card{background:var(--white);border:1px solid var(--border);border-radius:9px;padding:16px;transition:border-color .15s,box-shadow .15s;animation:fadeIn .2s ease both;position:relative;box-shadow:var(--shadow);}
+    .note-card:hover{border-color:var(--gold-bd);box-shadow:0 4px 20px rgba(176,112,32,.12);}
+    .note-card:hover .note-del{opacity:1;}
+    .note-title{font-size:0.86rem;font-weight:700;color:var(--ink);margin-bottom:7px;}
+    .note-body{font-size:0.79rem;color:var(--ink-mid);line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:90px;overflow:hidden;mask-image:linear-gradient(to bottom,black 60%,transparent);}
+    .note-date{font-size:0.64rem;color:var(--ink-ghost);margin-top:9px;font-family:'DM Mono',monospace;}
+    .note-del{position:absolute;top:10px;right:10px;opacity:0;transition:opacity .15s;}
+
+    /* REFLECT */
+    .reflect-q{padding:15px 18px;border-bottom:1px solid var(--border);}
+    .reflect-ql{font-size:0.78rem;font-weight:700;color:var(--ink-mid);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;}
+    .reflect-entries{padding:13px 18px;display:flex;flex-direction:column;gap:11px;}
+    .reflect-entry{background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:13px;}
+    .r-date{font-size:0.67rem;color:var(--ink-ghost);font-family:'DM Mono',monospace;margin-bottom:6px;}
+    .r-text{font-size:0.84rem;color:var(--ink-mid);line-height:1.65;white-space:pre-wrap;}
+
+    /* STATS */
+    .week-bars{display:flex;gap:8px;align-items:flex-end;height:100px;padding:10px 0;}
+    .wbar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;}
+    .wbar-bg{width:100%;background:var(--paper);border-radius:4px;height:80px;position:relative;overflow:hidden;}
+    .wbar-fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,var(--gold-dk),var(--gold));border-radius:4px;transition:height .6s ease;}
+    .wbar-label{font-size:0.65rem;color:var(--ink-ghost);font-family:'DM Mono',monospace;}
+    .wbar-val{font-size:0.7rem;font-weight:700;color:var(--gold-dk);font-family:'DM Mono',monospace;}
+    .stat-row{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--border);}
+    .stat-row:last-child{border-bottom:none;}
+    .sr-label{font-size:0.84rem;color:var(--ink-mid);font-weight:500;}
+    .sr-val{font-size:0.88rem;font-weight:700;color:var(--ink);font-family:'DM Mono',monospace;}
+
+    /* PRO GATE */
+    .pro-gate{position:relative;}
+    .pro-gate-ov{display:none;position:absolute;inset:0;background:rgba(245,237,224,.93);z-index:10;border-radius:var(--r);backdrop-filter:blur(4px);flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px;}
+    .pro-gate-ov.show{display:flex;}
+    .pg-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;color:var(--ink);}
+    .pg-sub{font-size:0.82rem;color:var(--ink-low);max-width:260px;line-height:1.55;}
+
+    /* SETTINGS */
+    .sset-title{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-low);padding:0 2px;margin-bottom:10px;}
+    .sset-gap{margin-bottom:22px;}
+    .srow{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--border);gap:14px;}
+    .srow:last-child{border-bottom:none;}
+    .srow-info{flex:1;}
+    .srow-label{font-size:0.88rem;font-weight:600;color:var(--ink);}
+    .srow-sub{font-size:0.76rem;color:var(--ink-low);margin-top:2px;}
+    .sw{width:42px;height:24px;border-radius:12px;background:var(--paper);border:1.5px solid var(--border2);cursor:pointer;position:relative;flex-shrink:0;transition:background .2s,border-color .2s;}
+    .sw::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:var(--ink-ghost);top:50%;left:3px;transform:translateY(-50%);transition:left .2s,background .2s;}
+    .sw.on{background:var(--green);border-color:var(--green);}
+    .sw.on::after{left:21px;background:#fff;}
+    .time-inp{background:var(--cream);border:1.5px solid var(--border);border-radius:6px;color:var(--ink);font-family:'DM Mono',monospace;font-size:0.84rem;padding:5px 10px;outline:none;width:90px;transition:border-color .2s;}
+    .time-inp:focus{border-color:var(--gold);}
+    .notif-btn{background:var(--blue-lt);color:var(--blue);border:1px solid var(--blue-lt);border-radius:6px;padding:7px 14px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:'Outfit',sans-serif;transition:opacity .15s;}
+    .notif-btn:hover{opacity:.8;}
+
+    /* UPGRADE MODAL */
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(17,16,8,.55);z-index:200;backdrop-filter:blur(4px);}
+    .modal-bg.show{display:flex;align-items:center;justify-content:center;padding:20px;}
+    .modal{background:var(--white);border-radius:14px;padding:36px;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:mi .25s ease;position:relative;}
+    @keyframes mi{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .modal-x{position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--ink-low);font-family:'Outfit',sans-serif;line-height:1;}
+    .modal-title{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:600;color:var(--ink);margin-bottom:6px;}
+    .modal-sub{font-size:0.86rem;color:var(--ink-low);margin-bottom:22px;line-height:1.55;}
+    .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+    .price-card{border:1.5px solid var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:border-color .15s;position:relative;}
+    .price-card:hover{border-color:var(--gold-bd);}
+    .price-card.feat{border-color:var(--gold);background:var(--gold-bg);}
+    .price-card.feat::before{content:'BEST VALUE';position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--gold);color:#fff;font-size:0.58rem;font-weight:700;padding:2px 10px;border-radius:99px;letter-spacing:.08em;}
+    .price-period{font-size:0.76rem;color:var(--ink-low);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+    .price-amt{font-family:'DM Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--ink);}
+    .price-amt span{font-size:0.8rem;color:var(--ink-low);font-weight:400;}
+    .price-note{font-size:0.7rem;color:var(--ink-low);margin-top:4px;}
+    .pro-feats{display:flex;flex-direction:column;gap:7px;margin-bottom:22px;}
+    .pro-feat{display:flex;align-items:center;gap:9px;font-size:0.84rem;color:var(--ink-mid);}
+    .pro-check{width:18px;height:18px;border-radius:50%;background:var(--green-lt);color:var(--green);font-size:0.68rem;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;}
+    .trial-btn{width:100%;padding:13px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-size:0.96rem;font-weight:700;cursor:pointer;transition:background .15s;margin-bottom:8px;}
+    .trial-btn:hover{background:var(--gold-dk);}
+    .trial-note{text-align:center;font-size:0.76rem;color:var(--ink-low);}
+
+    /* EMPTY */
+    .empty{text-align:center;padding:40px 20px;color:var(--ink-ghost);font-size:0.84rem;line-height:1.9;}
+    .el{display:block;width:28px;height:2px;background:var(--border);margin:0 auto 14px;border-radius:1px;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--ink);color:#fff;font-size:0.84rem;padding:11px 22px;border-radius:99px;opacity:0;transition:transform .28s ease,opacity .28s;z-index:500;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.28);font-weight:500;}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+    /* MOBILE */
+    @media(max-width:700px){
+      .app-wrap{flex-direction:column;}
+      .sidebar{width:100%;min-width:unset;height:auto;flex-direction:row;overflow-x:auto;overflow-y:hidden;border-right:none;border-bottom:1px solid var(--border);padding:8px 10px;gap:3px;}
+      .sidebar-logo,.sidebar-label,.sidebar-bottom,.logo-sub,.pro-pill,.pro-cta{display:none;}
+      .sidebar-section{padding:0;display:flex;gap:3px;}
+      .nav-item{flex-direction:column;gap:3px;padding:6px 10px;font-size:0.66rem;white-space:nowrap;border-left:none!important;}
+      .nav-dot{display:none;}
+      .nav-left{flex-direction:column;gap:3px;align-items:center;}
+      .main{height:auto;overflow-y:auto;}
+      .grid-2,.grid-3{grid-template-columns:1fr;}
+      .page{padding:18px 14px;}
+      .price-grid{grid-template-columns:1fr;}
+    }
+    ::-webkit-scrollbar{width:5px;height:5px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px;}
+  </style>
+</head>
+<body>
+
+<div id="notifBanner" class="top-banner" style="display:none;">
+  <span>Enable notifications to get daily reminders for tasks, habits and reflection</span>
+  <div style="display:flex;gap:8px;align-items:center;flex-shrink:0;">
+    <button onclick="askNotifPermission()">Enable</button>
+    <button class="top-banner-x" onclick="this.closest('.top-banner').style.display='none'">&#x2715;</button>
+  </div>
+</div>
+
+<div class="app-wrap">
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text">Focus<span>Day</span></div>
+    <div class="logo-sub">Productivity Suite</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Workspace</div>
+    <div class="nav-item active" onclick="go('today',this)"><div class="nav-left"><div class="nav-dot"></div>Today</div></div>
+    <div class="nav-item" onclick="go('timer',this)"><div class="nav-left"><div class="nav-dot"></div>Focus Timer</div></div>
+    <div class="nav-item" onclick="go('habits',this)"><div class="nav-left"><div class="nav-dot"></div>Habits</div></div>
+    <div class="nav-item" onclick="go('notes',this)"><div class="nav-left"><div class="nav-dot"></div>Notes</div></div>
+    <div class="nav-item" onclick="go('reflect',this)"><div class="nav-left"><div class="nav-dot"></div>Reflect</div></div>
+    <div class="nav-item" onclick="go('stats',this)">
+      <div class="nav-left"><div class="nav-dot"></div>Weekly Stats</div>
+      <span class="pro-pill" id="statsLock">PRO</span>
+    </div>
+    <div class="nav-item" onclick="go('settings',this)"><div class="nav-left"><div class="nav-dot"></div>Settings</div></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Resources</div>
+    <a class="nav-item" href="blog.html"><div class="nav-left"><div class="nav-dot"></div>Blog</div></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-date" id="sDate"></div>
+    <div class="streak-badge"><div class="streak-dot"></div><span class="streak-text" id="sStreak">0 day streak</span></div>
+    <button class="pro-cta" id="proCTA" onclick="showModal()">Upgrade to Pro</button>
+  </div>
+</aside>
+
+<main class="main" id="mainEl">
+
+<!-- TODAY -->
+<div class="page active" id="page-today">
+  <div class="page-header">
+    <div class="page-title">Today's Plan</div>
+    <div class="page-sub" id="greeting">What are your 3 most important tasks today?</div>
+  </div>
+  <div class="grid-3 gap">
+    <div class="stat-card"><div class="stat-label">MITs Done</div><div class="stat-val" id="sMits">0/3</div><div class="prog-wrap"><div class="prog-fill" id="sMitsBar" style="width:0%"></div></div><div class="stat-sub">Most Important Tasks</div></div>
+    <div class="stat-card it"><div class="stat-label">Backlog</div><div class="stat-val" id="sBlog">0</div><div class="stat-sub">tasks pending</div></div>
+    <div class="stat-card gt"><div class="stat-label">Completed</div><div class="stat-val" id="sDone">0</div><div class="stat-sub">done today</div></div>
+  </div>
+  <div class="grid-2 gap">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><div class="title-bar"></div>Backlog</div><span class="badge badge-ink" id="blBadge">0</span></div>
+      <div class="input-row"><input class="input" id="taskInp" placeholder="Add a task… press Enter" maxlength="120"/><button class="btn btn-p" onclick="addTask()">Add</button></div>
+      <div id="blLim" class="lim-ban" style="display:none;"><span>Free plan: 10 tasks max. Upgrade for unlimited.</span><button onclick="showModal()">Upgrade</button></div>
+      <div class="task-list" id="blList"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><div class="title-bar"></div>Focus List — Top 3</div><span class="badge badge-gold">MIT Method</span></div>
+      <div class="task-list" id="mitList"></div>
+      <div style="padding:11px 18px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;"><span style="font-size:0.74rem;color:var(--ink-ghost);font-style:italic;">Click the number to mark done</span><button class="btn btn-g" style="font-size:0.74rem;padding:5px 11px;" onclick="clearMITs()">Clear all</button></div>
+    </div>
+  </div>
+  <div id="doneWrap" style="display:none" class="gap">
+    <div class="card"><div class="card-header"><div class="card-title"><div class="title-bar" style="background:var(--green);"></div>Completed</div><span class="badge badge-green" id="doneBadge">0</span></div><div class="task-list" id="doneList"></div></div>
+  </div>
+</div>
+
+<!-- TIMER -->
+<div class="page" id="page-timer">
+  <div class="page-header"><div class="page-title">Focus Timer</div><div class="page-sub">Work in 25-minute sprints, rest, repeat. The Pomodoro method.</div></div>
+  <div class="card" style="max-width:470px;margin:0 auto;">
+    <div class="card-header"><div class="card-title"><div class="title-bar"></div>Pomodoro Session</div><span class="badge badge-gold" id="tPhaseBadge">Focus</span></div>
+    <div class="timer-center">
+      <div class="mode-pills">
+        <button class="mode-pill active" onclick="setMode('pom',25,this)">Pomodoro</button>
+        <button class="mode-pill" onclick="setMode('short',5,this)">Short Break</button>
+        <button class="mode-pill" onclick="setMode('long',15,this)">Long Break</button>
+      </div>
+      <div class="ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 200 200">
+          <circle class="ring-bg" cx="100" cy="100" r="90"/>
+          <circle class="ring-fill" id="tRing" cx="100" cy="100" r="90"/>
+        </svg>
+        <div class="ring-disp"><div class="ring-time" id="tDisp">25:00</div><div class="ring-phase" id="tPhase">Focus Time</div></div>
+      </div>
+      <div class="sess-row" id="sessDots"><div class="sess-dot"></div><div class="sess-dot"></div><div class="sess-dot"></div><div class="sess-dot"></div></div>
+      <div class="timer-ctrl">
+        <button class="btn btn-p" id="tBtn" onclick="toggleTimer()" style="min-width:96px;">Start</button>
+        <button class="btn btn-g" onclick="resetTimer()">Reset</button>
+      </div>
+      <select class="input" id="tTask" style="max-width:320px;"><option value="">Link to a task (optional)</option></select>
+      <div style="text-align:center;font-size:0.76rem;color:var(--ink-low);line-height:1.9;">Sessions today: <strong id="sessCount" style="color:var(--gold-dk);font-family:'DM Mono',monospace;">0</strong><br/>After 4 sessions, take a long break</div>
+    </div>
+  </div>
+</div>
+
+<!-- HABITS -->
+<div class="page" id="page-habits">
+  <div class="page-header"><div class="page-title">Habit Tracker</div><div class="page-sub">Build consistency one day at a time.</div></div>
+  <div class="grid-3 gap">
+    <div class="stat-card"><div class="stat-label">Today</div><div class="stat-val" id="hToday">0/0</div><div class="prog-wrap"><div class="prog-fill g" id="hBar" style="width:0%"></div></div><div class="stat-sub">habits done</div></div>
+    <div class="stat-card"><div class="stat-label">Best Streak</div><div class="stat-val" id="hBest" style="font-size:1.4rem;">0 days</div><div class="stat-sub">longest run</div></div>
+    <div class="stat-card it"><div class="stat-label">Tracking</div><div class="stat-val" id="hTotal">0</div><div class="stat-sub">total habits</div></div>
+  </div>
+  <div class="card gap">
+    <div class="card-header"><div class="card-title"><div class="title-bar"></div>Daily Habits</div><span class="badge badge-green" id="hBadge">0 / 0</span></div>
+    <div id="hList"></div>
+    <div id="hLim" class="lim-ban" style="display:none;"><span>Free plan: 3 habits max. Upgrade for unlimited.</span><button onclick="showModal()">Upgrade</button></div>
+    <div class="add-habit-row"><input class="input emoji-inp" id="hEmoji" placeholder="+" maxlength="2"/><input class="input" id="hName" placeholder="New habit — e.g. Exercise, Read, Drink water…" maxlength="60" style="flex:1"/><button class="btn btn-p" onclick="addHabit()">Add</button></div>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div class="page" id="page-notes">
+  <div class="page-header"><div class="page-title">Quick Notes</div><div class="page-sub">Capture ideas and thoughts instantly.</div></div>
+  <div class="card gap">
+    <div class="card-header"><div class="card-title"><div class="title-bar"></div>New Note</div></div>
+    <div style="padding:14px 18px;display:flex;flex-direction:column;gap:10px;">
+      <input class="input" id="nTitle" placeholder="Title (optional)" maxlength="80"/>
+      <textarea class="input" id="nBody" placeholder="Write your note… Ctrl + Enter to save" maxlength="2000"></textarea>
+      <div style="display:flex;justify-content:flex-end;gap:10px;align-items:center;">
+        <span style="font-size:0.72rem;color:var(--ink-ghost);font-family:'DM Mono',monospace;" id="nCount">0 / 2000</span>
+        <button class="btn btn-p" onclick="addNote()">Save Note</button>
+      </div>
+    </div>
+    <div id="nLim" class="lim-ban" style="display:none;"><span>Free plan: 5 notes max. Upgrade for unlimited.</span><button onclick="showModal()">Upgrade</button></div>
+  </div>
+  <div class="notes-grid" id="nGrid"></div>
+</div>
+
+<!-- REFLECT -->
+<div class="page" id="page-reflect">
+  <div class="page-header"><div class="page-title">Daily Reflection</div><div class="page-sub">End each day with intention.</div></div>
+  <div class="grid-2 gap">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><div class="title-bar" style="background:var(--green);"></div>Today's Wins</div><span class="badge badge-green">Positive</span></div>
+      <div class="reflect-q"><div class="reflect-ql">What went well today?</div><textarea class="input" id="winsInp" placeholder="Three things that went well…"></textarea></div>
+      <div style="padding:12px 18px;border-top:1px solid var(--border);"><button class="btn btn-p" onclick="saveRef('wins')">Save</button></div>
+      <div class="reflect-entries" id="winsList"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><div class="title-bar"></div>Tomorrow's Focus</div><span class="badge badge-gold">Improve</span></div>
+      <div class="reflect-q"><div class="reflect-ql">What will you do differently tomorrow?</div><textarea class="input" id="impInp" placeholder="One thing to improve or focus on…"></textarea></div>
+      <div style="padding:12px 18px;border-top:1px solid var(--border);"><button class="btn btn-p" onclick="saveRef('improve')">Save</button></div>
+      <div class="reflect-entries" id="impList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS (PRO) -->
+<div class="page" id="page-stats">
+  <div class="page-header"><div class="page-title">Weekly Stats</div><div class="page-sub">Your productivity overview for the last 7 days.</div></div>
+  <div class="pro-gate">
+    <div class="pro-gate-ov show" id="statsOv">
+      <div class="pg-title">Weekly Stats is a Pro feature</div>
+      <div class="pg-sub">Upgrade to see your weekly task completion, habit consistency, and total focus time.</div>
+      <button class="btn btn-p" onclick="showModal()">Unlock Pro</button>
+    </div>
+    <div class="grid-3 gap">
+      <div class="stat-card"><div class="stat-label">Tasks Completed</div><div class="stat-val" id="wTasks">0</div><div class="stat-sub">this week</div></div>
+      <div class="stat-card gt"><div class="stat-label">Habit Rate</div><div class="stat-val" id="wHabit">0%</div><div class="stat-sub">avg completion</div></div>
+      <div class="stat-card bt"><div class="stat-label">Focus Time</div><div class="stat-val" id="wFocus">0m</div><div class="stat-sub">total sessions</div></div>
+    </div>
+    <div class="grid-2 gap">
+      <div class="card"><div class="card-header"><div class="card-title"><div class="title-bar"></div>Habits Per Day</div></div><div style="padding:16px 18px 8px;"><div class="week-bars" id="wBars"></div></div></div>
+      <div class="card"><div class="card-header"><div class="card-title"><div class="title-bar"></div>Week Summary</div></div><div id="wSummary"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+  <div class="page-header"><div class="page-title">Settings</div><div class="page-sub">Notifications, account, and data management.</div></div>
+  <div class="sset-gap">
+    <div class="sset-title">Notifications</div>
+    <div class="card">
+      <div class="srow">
+        <div class="srow-info"><div class="srow-label">Notification Permission</div><div class="srow-sub" id="nPermStatus">Not yet enabled</div></div>
+        <button class="notif-btn" id="nPermBtn" onclick="askNotifPermission()">Enable Notifications</button>
+      </div>
+      <div class="srow">
+        <div class="srow-info"><div class="srow-label">Morning Task Reminder <span class="pro-pill" style="margin-left:6px;">PRO</span></div><div class="srow-sub">Reminds you to set your top 3 tasks for the day</div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><input type="time" class="time-inp" id="mitTime" value="09:00" onchange="saveNotifSettings()"/><div class="sw" id="mitSw" onclick="togNotif('mit')"></div></div>
+      </div>
+      <div class="srow">
+        <div class="srow-info"><div class="srow-label">Habit Check-In Reminder <span class="pro-pill" style="margin-left:6px;">PRO</span></div><div class="srow-sub">Alerts you to complete habits not done yet today</div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><input type="time" class="time-inp" id="habTime" value="20:00" onchange="saveNotifSettings()"/><div class="sw" id="habSw" onclick="togNotif('habit')"></div></div>
+      </div>
+      <div class="srow">
+        <div class="srow-info"><div class="srow-label">Evening Reflection Reminder <span class="pro-pill" style="margin-left:6px;">PRO</span></div><div class="srow-sub">Prompts you to reflect on your day before it ends</div></div>
+        <div style="display:flex;align-items:center;gap:10px;"><input type="time" class="time-inp" id="refTime" value="21:00" onchange="saveNotifSettings()"/><div class="sw" id="refSw" onclick="togNotif('reflect')"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="sset-gap">
+    <div class="sset-title">Account</div>
+    <div class="card">
+      <div class="srow"><div class="srow-info"><div class="srow-label" id="planLabel">Free Plan</div><div class="srow-sub" id="planSub">Upgrade to unlock unlimited tasks, habits, notes, stats and notifications</div></div><button class="btn btn-p" id="upgradeBtn" onclick="showModal()">Upgrade to Pro</button></div>
+    </div>
+  </div>
+  <div class="sset-gap">
+    <div class="sset-title">Data</div>
+    <div class="card">
+      <div class="srow"><div class="srow-info"><div class="srow-label">Export All Data</div><div class="srow-sub">Download a backup of your tasks, habits, notes and reflections as JSON</div></div><button class="btn btn-g" onclick="exportData()">Export JSON</button></div>
+      <div class="srow"><div class="srow-info"><div class="srow-label">Clear All Data</div><div class="srow-sub">Permanently delete everything. This cannot be undone.</div></div><button class="btn btn-g" style="color:var(--red);border-color:var(--red-lt);" onclick="clearAll()">Clear Data</button></div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div><!-- end app-wrap -->
+
+<!-- UPGRADE MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <button class="modal-x" onclick="hideModal()">&#x2715;</button>
+    <div class="modal-title">Upgrade to FocusDay Pro</div>
+    <div class="modal-sub">Unlock everything. No limits, smart notifications, weekly stats.</div>
+    <div class="price-grid">
+      <div class="price-card"><div class="price-period">Monthly</div><div class="price-amt">$2.99<span>/mo</span></div><div class="price-note">Billed monthly</div></div>
+      <div class="price-card feat"><div class="price-period">Yearly</div><div class="price-amt">$19.99<span>/yr</span></div><div class="price-note">Save 44% vs monthly</div></div>
+    </div>
+    <div class="pro-feats">
+      <div class="pro-feat"><div class="pro-check">&#10003;</div>Unlimited tasks, habits and notes</div>
+      <div class="pro-feat"><div class="pro-check">&#10003;</div>Smart notifications — task, habit and reflection reminders</div>
+      <div class="pro-feat"><div class="pro-check">&#10003;</div>Weekly Stats report with daily charts</div>
+      <div class="pro-feat"><div class="pro-check">&#10003;</div>Export your data at any time</div>
+      <div class="pro-feat"><div class="pro-check">&#10003;</div>All future Pro features included</div>
+    </div>
+    <button class="trial-btn" onclick="startTrial()">Start 7-Day Free Trial</button>
+    <div class="trial-note">No credit card required. Full access for 7 days.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// SERVICE WORKER
+if('serviceWorker'in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// STATE
+const KEY='fd_v4';
+const TODAY=new Date().toLocaleDateString('en-CA');
+const FREE={tasks:10,habits:3,notes:5};
+
+function defState(){return{backlog:[],mits:[null,null,null],notes:[],habits:[],habitLog:{},reflections:{wins:[],improve:[]},sessions:0,streak:0,lastDate:null,isPro:false,trialStart:null,notif:{permission:false,mit:{on:false,time:'09:00'},habit:{on:false,time:'20:00'},reflect:{on:false,time:'21:00'}}};}
+
+function loadState(){try{const s=JSON.parse(localStorage.getItem(KEY));return s?{...defState(),...s,notif:{...defState().notif,...(s.notif||{})}}:defState();}catch{return defState();}}
+
+function save(){localStorage.setItem(KEY,JSON.stringify(st));}
+
+let st=loadState();
+
+if(st.lastDate!==TODAY){
+  st.habitLog=st.habitLog||{};
+  st.habitLog[TODAY]=st.habitLog[TODAY]||{};
+  const yest=new Date();yest.setDate(yest.getDate()-1);
+  const yStr=yest.toLocaleDateString('en-CA');
+  const hadY=st.habitLog[yStr]&&Object.values(st.habitLog[yStr]).some(Boolean);
+  st.streak=hadY?(st.streak||0)+1:st.lastDate?1:st.streak||0;
+  st.lastDate=TODAY;save();
+}
+
+// PRO
+function isPro(){
+  if(st.isPro)return true;
+  if(st.trialStart)return(Date.now()-st.trialStart)<7*86400000;
+  return false;
+}
+function trialLeft(){
+  if(!st.trialStart)return 0;
+  return Math.max(0,Math.ceil(7-(Date.now()-st.trialStart)/86400000));
+}
+function startTrial(){st.trialStart=Date.now();save();hideModal();refreshPro();schedNotifs();toast('Pro trial started! 7 days of full access.');}
+
+function refreshPro(){
+  const pro=isPro();
+  const cta=document.getElementById('proCTA');
+  const sl=document.getElementById('statsLock');
+  const ov=document.getElementById('statsOv');
+  const pl=document.getElementById('planLabel');
+  const ps=document.getElementById('planSub');
+  const ub=document.getElementById('upgradeBtn');
+  if(pro){
+    cta.textContent='FocusDay Pro';cta.classList.add('active');cta.onclick=null;
+    if(sl)sl.style.display='none';
+    if(ov)ov.classList.remove('show');
+    pl.textContent=st.isPro?'Pro Plan':`Pro Trial (${trialLeft()} days left)`;
+    ps.textContent='All features unlocked. Thank you for supporting FocusDay.';
+    if(ub)ub.style.display='none';
+  }else{
+    cta.textContent='Upgrade to Pro';cta.classList.remove('active');cta.onclick=showModal;
+    if(sl)sl.style.display='';
+    if(ov)ov.classList.add('show');
+    pl.textContent='Free Plan';
+    ps.textContent='Upgrade to unlock unlimited tasks, habits, notes, stats and notifications.';
+    if(ub)ub.style.display='';
+  }
+  document.getElementById('blLim').style.display=!pro&&st.backlog.filter(t=>!t.done).length>=FREE.tasks?'':'none';
+  document.getElementById('hLim').style.display=!pro&&st.habits.length>=FREE.habits?'':'none';
+  document.getElementById('nLim').style.display=!pro&&st.notes.length>=FREE.notes?'':'none';
+}
+
+function showModal(){document.getElementById('modal').classList.add('show');}
+function hideModal(){document.getElementById('modal').classList.remove('show');}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))hideModal();});
+
+// NOTIFICATIONS
+function msUntil(t){const[h,m]=t.split(':').map(Number);const n=new Date(),d=new Date();d.setHours(h,m,0,0);if(d<=n)d.setDate(d.getDate()+1);return d-n;}
+
+function sendToSW(msg){
+  if(!('serviceWorker'in navigator))return;
+  navigator.serviceWorker.ready.then(r=>{if(r.active)r.active.postMessage(msg);}).catch(()=>{});
+}
+
+function schedNotifs(){
+  if(!isPro()||Notification.permission!=='granted')return;
+  const n=st.notif;
+  if(n.mit&&n.mit.on){
+    const pending=st.mits.filter(m=>m&&!m.done).length;
+    const total=st.mits.filter(Boolean).length;
+    sendToSW({type:'SCHEDULE',id:'mit',title:'FocusDay — Morning Check-In',body:total===0?'You have not set your top 3 tasks yet. Start your day with intention.':`${pending} of your focus tasks still need attention today.`,delay:msUntil(n.mit.time)});
+  }else sendToSW({type:'CANCEL',id:'mit'});
+  if(n.habit&&n.habit.on){
+    const log=st.habitLog[TODAY]||{};
+    const rem=st.habits.filter(h=>!log[h.id]).length;
+    sendToSW({type:'SCHEDULE',id:'habit',title:'FocusDay — Habit Check-In',body:rem>0?`${rem} habit${rem>1?'s':''} still to complete today.`:'All habits done for today. Great work!',delay:msUntil(n.habit.time)});
+  }else sendToSW({type:'CANCEL',id:'habit'});
+  if(n.reflect&&n.reflect.on){
+    sendToSW({type:'SCHEDULE',id:'reflect',title:'FocusDay — Evening Reflection',body:'Take 2 minutes to reflect on today. What went well? What will you improve tomorrow?',delay:msUntil(n.reflect.time)});
+  }else sendToSW({type:'CANCEL',id:'reflect'});
+}
+
+async function askNotifPermission(){
+  if(!('Notification'in window)){toast('Notifications not supported here');return;}
+  const p=await Notification.requestPermission();
+  st.notif.permission=p==='granted';save();
+  refreshNotifUI();
+  if(p==='granted'){toast('Notifications enabled');document.getElementById('notifBanner').style.display='none';schedNotifs();}
+  else toast('Notification permission denied');
+}
+
+function refreshNotifUI(){
+  const g=Notification.permission==='granted';
+  const s=document.getElementById('nPermStatus');
+  const b=document.getElementById('nPermBtn');
+  if(s)s.textContent=g?'Notifications are enabled':'Click to enable notifications';
+  if(b){b.textContent=g?'Enabled':'Enable Notifications';b.disabled=g;}
+  const n=st.notif;
+  ['mit','habit','reflect'].forEach(k=>{
+    const sw=document.getElementById(k==='mit'?'mitSw':k==='habit'?'habSw':'refSw');
+    if(sw)sw.classList.toggle('on',!!(n[k]&&n[k].on));
+    const ti=document.getElementById(k==='mit'?'mitTime':k==='habit'?'habTime':'refTime');
+    if(ti&&n[k])ti.value=n[k].time;
+  });
+}
+
+function togNotif(k){
+  if(!isPro()){showModal();return;}
+  if(Notification.permission!=='granted'){toast('Please enable notifications first');return;}
+  if(!st.notif[k])st.notif[k]={on:false,time:'09:00'};
+  st.notif[k].on=!st.notif[k].on;save();refreshNotifUI();schedNotifs();
+  toast(st.notif[k].on?'Reminder turned on':'Reminder turned off');
+}
+
+function saveNotifSettings(){
+  const map={mit:'mitTime',habit:'habTime',reflect:'refTime'};
+  Object.entries(map).forEach(([k,id])=>{
+    const el=document.getElementById(id);
+    if(el&&st.notif[k])st.notif[k].time=el.value;
+  });
+  save();schedNotifs();
+}
+
+// NAV
+function go(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+  if(id==='timer')fillTimerTasks();
+  if(id==='stats')renderStats();
+}
+
+// TOAST
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2300);}
+
+// INIT
+function init(){
+  const d=new Date();
+  document.getElementById('sDate').textContent=d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+  document.getElementById('sStreak').textContent=`${st.streak||0} day streak`;
+  const hr=d.getHours();
+  document.getElementById('greeting').textContent=`${hr<12?'Good morning':hr<17?'Good afternoon':'Good evening'}. What are your 3 most important tasks today?`;
+  if('Notification'in window&&Notification.permission==='default')document.getElementById('notifBanner').style.display='';
+  refreshPro();refreshNotifUI();
+}
+
+// TODAY
+function addTask(){
+  const inp=document.getElementById('taskInp');const t=inp.value.trim();
+  if(!t){toast('Type a task first');return;}
+  if(!isPro()&&st.backlog.filter(x=>!x.done).length>=FREE.tasks){showModal();return;}
+  st.backlog.unshift({id:Date.now(),text:t,done:false});save();inp.value='';renderToday();toast('Task added');
+}
+document.getElementById('taskInp').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
+
+function promote(id){
+  const slot=st.mits.indexOf(null);if(slot===-1){toast('Focus list is full');return;}
+  const task=st.backlog.find(t=>t.id===id);if(!task)return;
+  st.mits[slot]={id:task.id,text:task.text,done:false};save();renderToday();toast('Added to Focus List at position '+(slot+1));
+}
+function demote(id){st.mits=st.mits.map(m=>m&&m.id===id?null:m);save();renderToday();toast('Removed from Focus List');}
+function toggleMIT(i){
+  if(!st.mits[i])return;st.mits[i].done=!st.mits[i].done;
+  const task=st.backlog.find(t=>t.id===st.mits[i].id);if(task)task.done=st.mits[i].done;
+  save();renderToday();if(st.mits[i].done)toast('Task marked complete');
+}
+function delTask(id){st.backlog=st.backlog.filter(t=>t.id!==id);st.mits=st.mits.map(m=>m&&m.id===id?null:m);save();renderToday();toast('Task deleted');}
+function clearMITs(){st.mits=[null,null,null];save();renderToday();toast('Focus List cleared');}
+
+function renderToday(){
+  const mitIds=st.mits.filter(Boolean).map(m=>m.id);
+  const pending=st.backlog.filter(t=>!t.done);
+  const done=st.backlog.filter(t=>t.done);
+  const mitDone=st.mits.filter(m=>m&&m.done).length;
+  document.getElementById('sMits').textContent=`${mitDone}/3`;
+  document.getElementById('sMitsBar').style.width=(mitDone/3*100)+'%';
+  document.getElementById('sBlog').textContent=pending.length;
+  document.getElementById('sDone').textContent=done.length;
+  document.getElementById('blBadge').textContent=pending.length;
+  const bl=document.getElementById('blList');
+  if(!pending.length){bl.innerHTML='<div class="empty"><span class="el"></span>No pending tasks. Add one above.</div>';}
+  else{bl.innerHTML='';pending.forEach(t=>{const isMIT=mitIds.includes(t.id);const div=document.createElement('div');div.className='task-item';div.innerHTML=`<div class="t-txt">${esc(t.text)}</div>${isMIT?'<span class="badge badge-gold" style="font-size:.62rem;">FOCUS</span>':''}<div class="t-acts">${!isMIT?`<button class="ib foc" onclick="promote(${t.id})">Focus</button>`:`<button class="ib" onclick="demote(${t.id})">Remove</button>`}<button class="ib del" onclick="delTask(${t.id})">Delete</button></div>`;bl.appendChild(div);});}
+  const ml=document.getElementById('mitList');ml.innerHTML='';
+  for(let i=0;i<3;i++){const m=st.mits[i];const div=document.createElement('div');div.className='task-item';if(m){div.innerHTML=`<div class="mit-n ${m.done?'dn':''}" onclick="toggleMIT(${i})">${m.done?'&#10003;':i+1}</div><div class="t-txt ${m.done?'done':''}">${esc(m.text)}</div><div class="t-acts"><button class="ib del" onclick="demote(${m.id})">Remove</button></div>`;}else{div.innerHTML=`<div class="mit-n" style="cursor:default;opacity:.3;">${i+1}</div><div class="mit-empty">Select a task from the backlog</div>`;}ml.appendChild(div);if(i<2){const d=document.createElement('div');d.className='divider';ml.appendChild(d);}}
+  const dw=document.getElementById('doneWrap');
+  if(!done.length){dw.style.display='none';}else{dw.style.display='';document.getElementById('doneBadge').textContent=done.length;const dl=document.getElementById('doneList');dl.innerHTML='';done.forEach(t=>{const div=document.createElement('div');div.className='task-item';div.innerHTML=`<div class="t-txt done">${esc(t.text)}</div><div class="t-acts"><button class="ib del" onclick="delTask(${t.id})">Delete</button></div>`;dl.appendChild(div);});}
+  refreshPro();
+}
+
+// TIMER
+let tIv=null,tSec=25*60,tTotal=25*60,tRunning=false,tMode='pom';
+const CIRC=2*Math.PI*90;
+function setMode(mode,mins,btn){if(tRunning)resetTimer();tMode=mode;tSec=mins*60;tTotal=mins*60;document.querySelectorAll('.mode-pill').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById('tRing').className='ring-fill'+(mode!=='pom'?' brk':'');const L={pom:'Focus Time',short:'Short Break',long:'Long Break'};document.getElementById('tPhase').textContent=L[mode];document.getElementById('tPhaseBadge').textContent=mode==='pom'?'Focus':'Break';updTimer();}
+function toggleTimer(){if(tRunning){clearInterval(tIv);tRunning=false;document.getElementById('tBtn').textContent='Resume';}else{tRunning=true;document.getElementById('tBtn').textContent='Pause';tIv=setInterval(()=>{tSec--;updTimer();if(tSec<=0){clearInterval(tIv);tRunning=false;document.getElementById('tBtn').textContent='Start';if(tMode==='pom'){st.sessions=(st.sessions||0)+1;save();document.getElementById('sessCount').textContent=st.sessions;updDots();toast('Session complete. Take a break.');}else{toast('Break over. Back to focus.');}}},1000);}}
+function resetTimer(){clearInterval(tIv);tRunning=false;tSec=tTotal;document.getElementById('tBtn').textContent='Start';updTimer();}
+function updTimer(){const m=String(Math.floor(tSec/60)).padStart(2,'0');const s=String(tSec%60).padStart(2,'0');document.getElementById('tDisp').textContent=`${m}:${s}`;const r=document.getElementById('tRing');r.style.strokeDasharray=CIRC;r.style.strokeDashoffset=CIRC*(1-tSec/tTotal);}
+function updDots(){const dots=document.querySelectorAll('.sess-dot');const mod=st.sessions%4;dots.forEach((d,i)=>d.classList.toggle('dn',i<mod));}
+function fillTimerTasks(){const sel=document.getElementById('tTask');sel.innerHTML='<option value="">Link to a task (optional)</option>';st.backlog.filter(t=>!t.done).forEach(t=>{sel.innerHTML+=`<option value="${t.id}">${esc(t.text)}</option>`;});}
+document.getElementById('sessCount').textContent=st.sessions||0;updDots();updTimer();
+
+// HABITS
+function addHabit(){const name=document.getElementById('hName').value.trim();const emoji=document.getElementById('hEmoji').value.trim()||'·';if(!name){toast('Enter a habit name');return;}if(!isPro()&&st.habits.length>=FREE.habits){showModal();return;}if(!st.habits)st.habits=[];st.habits.push({id:Date.now(),name,emoji});document.getElementById('hName').value='';document.getElementById('hEmoji').value='';save();renderHabits();toast('Habit added');}
+document.getElementById('hName').addEventListener('keydown',e=>{if(e.key==='Enter')addHabit();});
+function togHabit(id){if(!st.habitLog)st.habitLog={};if(!st.habitLog[TODAY])st.habitLog[TODAY]={};st.habitLog[TODAY][id]=!st.habitLog[TODAY][id];save();renderHabits();schedNotifs();}
+function delHabit(id){st.habits=st.habits.filter(h=>h.id!==id);save();renderHabits();toast('Habit removed');}
+function renderHabits(){
+  if(!st.habits)st.habits=[];
+  const log=(st.habitLog&&st.habitLog[TODAY])||{};
+  const done=st.habits.filter(h=>log[h.id]).length;const total=st.habits.length;const pct=total?Math.round(done/total*100):0;
+  document.getElementById('hToday').textContent=`${done}/${total}`;document.getElementById('hBar').style.width=pct+'%';document.getElementById('hTotal').textContent=total;document.getElementById('hBadge').textContent=`${done} / ${total}`;
+  let best=0,cur=0;Object.keys(st.habitLog||{}).sort().forEach(d=>{if(Object.values(st.habitLog[d]||{}).some(Boolean)){cur++;best=Math.max(best,cur);}else cur=0;});
+  document.getElementById('hBest').textContent=best+' days';
+  const list=document.getElementById('hList');
+  if(!total){list.innerHTML='<div class="empty"><span class="el"></span>No habits yet. Add your first one below.</div>';refreshPro();return;}
+  list.innerHTML='';
+  st.habits.forEach(h=>{
+    const isDone=!!log[h.id];
+    let streak=0;const dates=Object.keys(st.habitLog||{}).sort().reverse();for(const d of dates){if(st.habitLog[d]&&st.habitLog[d][h.id])streak++;else break;}
+    const div=document.createElement('div');div.className='habit-item';
+    div.innerHTML=`<div class="h-emoji">${h.emoji}</div><div class="h-info"><div class="h-name">${esc(h.name)}</div><div class="h-streak">${streak>0?streak+' day streak':'Not completed today'}</div></div><div class="h-acts"><button class="ib del" onclick="delHabit(${h.id})">Delete</button></div><div class="h-toggle ${isDone?'on':''}" onclick="togHabit(${h.id})"></div>`;
+    list.appendChild(div);
+  });
+  refreshPro();
+}
+
+// NOTES
+document.getElementById('nBody').addEventListener('input',function(){document.getElementById('nCount').textContent=`${this.value.length} / 2000`;});
+document.getElementById('nBody').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')addNote();});
+function addNote(){const title=document.getElementById('nTitle').value.trim();const body=document.getElementById('nBody').value.trim();if(!body&&!title){toast('Write something before saving');return;}if(!isPro()&&st.notes.length>=FREE.notes){showModal();return;}if(!st.notes)st.notes=[];st.notes.unshift({id:Date.now(),title,body,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});document.getElementById('nTitle').value='';document.getElementById('nBody').value='';document.getElementById('nCount').textContent='0 / 2000';save();renderNotes();toast('Note saved');}
+function delNote(id){st.notes=st.notes.filter(n=>n.id!==id);save();renderNotes();toast('Note deleted');}
+function renderNotes(){
+  if(!st.notes)st.notes=[];
+  const grid=document.getElementById('nGrid');
+  if(!st.notes.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><span class="el"></span>No notes yet. Save your first one above.</div>';refreshPro();return;}
+  grid.innerHTML='';
+  st.notes.forEach(n=>{const div=document.createElement('div');div.className='note-card';div.innerHTML=`<button class="ib del note-del" style="font-size:0.72rem;" onclick="delNote(${n.id})">Delete</button>${n.title?`<div class="note-title">${esc(n.title)}</div>`:''}${n.body?`<div class="note-body">${esc(n.body)}</div>`:''}<div class="note-date">${n.date}</div>`;grid.appendChild(div);});
+  refreshPro();
+}
+
+// REFLECT
+function saveRef(type){const inp=document.getElementById(type==='wins'?'winsInp':'impInp');const text=inp.value.trim();if(!text){toast('Write something before saving');return;}if(!st.reflections)st.reflections={wins:[],improve:[]};st.reflections[type].unshift({text,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'})});inp.value='';save();renderReflect();schedNotifs();toast('Reflection saved');}
+function renderReflect(){
+  const map={wins:'winsList',improve:'impList'};
+  Object.entries(map).forEach(([type,id])=>{
+    const list=document.getElementById(id);const entries=(st.reflections&&st.reflections[type])||[];
+    if(!entries.length){list.innerHTML='';return;}
+    list.innerHTML='<div class="reflect-entries">'+entries.slice(0,5).map(e=>`<div class="reflect-entry"><div class="r-date">${e.date}</div><div class="r-text">${esc(e.text)}</div></div>`).join('')+'</div>';
+  });
+}
+
+// STATS
+function renderStats(){
+  if(!isPro())return;
+  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toLocaleDateString('en-CA'));}
+  const labels=days.map(d=>new Date(d+'T12:00').toLocaleDateString('en-US',{weekday:'short'}));
+  document.getElementById('wTasks').textContent=st.backlog.filter(t=>t.done).length;
+  let ts=0,cs=0;days.forEach(d=>{st.habits.forEach(h=>{ts++;if(st.habitLog&&st.habitLog[d]&&st.habitLog[d][h.id])cs++;});});
+  document.getElementById('wHabit').textContent=(ts>0?Math.round(cs/ts*100):0)+'%';
+  const mins=(st.sessions||0)*25;document.getElementById('wFocus').textContent=mins>=60?`${Math.floor(mins/60)}h ${mins%60}m`:mins+'m';
+  const bars=document.getElementById('wBars');bars.innerHTML='';
+  const maxH=Math.max(1,st.habits.length);
+  days.forEach((d,i)=>{const log=st.habitLog&&st.habitLog[d]?st.habitLog[d]:{};const cnt=st.habits.filter(h=>log[h.id]).length;const pct=Math.round(cnt/maxH*100);const w=document.createElement('div');w.className='wbar-wrap';w.innerHTML=`<div class="wbar-val">${cnt}</div><div class="wbar-bg"><div class="wbar-fill" style="height:${pct}%"></div></div><div class="wbar-label">${labels[i]}</div>`;bars.appendChild(w);});
+  document.getElementById('wSummary').innerHTML=[['Habits Tracked',st.habits.length],['Focus Sessions',st.sessions||0],['Day Streak',(st.streak||0)+' days'],['Notes Saved',(st.notes||[]).length],['Habit Rate',(ts>0?Math.round(cs/ts*100):0)+'%']].map(([l,v])=>`<div class="stat-row"><span class="sr-label">${l}</span><span class="sr-val">${v}</span></div>`).join('');
+}
+
+// EXPORT / CLEAR
+function exportData(){const blob=new Blob([JSON.stringify({exportDate:new Date().toISOString(),tasks:st.backlog,habits:st.habits,habitLog:st.habitLog,notes:st.notes,reflections:st.reflections,sessions:st.sessions},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`focusday-export-${TODAY}.json`;a.click();toast('Data exported successfully');}
+function clearAll(){if(!confirm('This will permanently delete all your data. Are you sure?'))return;localStorage.removeItem(KEY);location.reload();}
+
+// UTILS
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// BOOT
+init();renderToday();renderHabits();renderNotes();renderReflect();schedNotifs();
+</script>
+</body>
+</html>
