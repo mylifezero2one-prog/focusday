@@ -25,17 +25,12 @@ jobs:
         run: npm install -g @bubblewrap/cli
 
       - name: Initialize TWA
-        run: |
-          bubblewrap init --manifest https://myfocusday.netlify.app/manifest.json --directory ./twa-app
-        env:
-          BUBBLEWRAP_SKIP_JDK_CHECK: true
+        run: printf "n\n" | bubblewrap init --manifest https://myfocusday.netlify.app/manifest.json --directory ./twa-app
 
       - name: Build APK
         run: |
           cd twa-app
-          bubblewrap build
-        env:
-          BUBBLEWRAP_SKIP_JDK_CHECK: true
+          printf "n\nFocusday123\nFocusday123\n" | bubblewrap build
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
